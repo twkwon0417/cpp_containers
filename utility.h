@@ -1,10 +1,9 @@
 //
-// Created by 권태완 on 2025. 10. 3..
-// .은 객체 내부 접근, ::은 class 접근
-// &은 참조를 의미 주소외에도 다양한 것들을 의미
+// Created by 권태완 on 2025. 10. 4..
+//
 
-#ifndef PAIR_H
-#define PAIR_H
+#ifndef UTILITY_H
+#define UTILITY_H
 
 namespace ft {
 
@@ -106,6 +105,11 @@ namespace ft {
         if (lhs.first > rhs.first) return true;
         if (lhs.first == rhs.first && lhs.second >= rhs.second) return true;
         return false;
+    }
+
+    template<typename T1, typename T2>
+    ft::pair<T1, T2> make_pair( T1 x, T2 y ) {
+        return ft::pair<T1, T2>(x, y);
     }
 
 #endif
