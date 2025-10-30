@@ -5,4 +5,6 @@ set(CMAKE_CXX_STANDARD 98)
 
 add_executable(cpp_containers main.cpp
         utility.h
-        algorithm.h)
+        algorithm.h
+        type_traits.h
+        iterator.h)
