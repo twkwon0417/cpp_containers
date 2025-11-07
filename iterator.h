@@ -37,21 +37,16 @@ namespace ft {
         typedef typename ft::iterator_traits<Iter>::pointer pointer;
         typedef typename ft::iterator_traits<Iter>::reference reference;
 
+    protected:
         Iter current;
 
     public:
-        reverse_iterator() {
-            current = NULL;  // 임시방편
-        };
+        reverse_iterator() : current() {}
 
-        reverse_iterator(iterator_type x) {
-            this->current = x;
-        }
+        explicit reverse_iterator(iterator_type x) : current(x) {}
 
-        template<typename U>
-        reverse_iterator(const reverse_iterator<U>& other) {
-            this->current = other.current;
-        }
+        template <class U>
+        reverse_iterator(const reverse_iterator<U> &other) : current(other.base()) {}
 
         // ================================================
 
@@ -75,9 +70,9 @@ namespace ft {
         }
 
         // https://en.cppreference.com/w/cpp/iterator/reverse_iterator/operator_at.html 어쩌라고
-//        operator[] ( difference_type n ) const {
-//            return current[-n - 1];
-//        }
+        reference operator[] ( difference_type n ) const {
+            return current[-n - 1];
+        }
 
         reverse_iterator& operator++() {
             --current; return *this;
