@@ -1,0 +1,45 @@
+
+
+============================================================
+=================== MODULE: Vector Tests ===================
+============================================================
+
+
+============================================================
+>>> TEST FILE: test_vector_basic
+============================================================
+
+
+---------------------- [Constructors] ----------------------
+
+
+FORWARD ITERATOR CALLED
+
+4
+v_default.size(): 0
+v_filled: 42 42 42 42 42 
+v_range: 
+v_copy == v_range ? true
+
+------------------ [Assignment operator] ------------------
+
+v_assign.size(): 0
+v_assign[2]: 0
+
+--------------------- [Capacity test] ---------------------
+
+v_filled.size():     5
+v_filled.capacity(): 5
+v_filled.max_size(): 4611686018427387903
+v_default.empty():   1
+
+--------------------- [Element access] ---------------------
+
+front: KU
+back:  
+All elements: KU CSE ft_containers 
+
+---------------- [Exception test for at()] ----------------
+
+Caught exception: vector::at
+
