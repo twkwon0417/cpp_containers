@@ -5,7 +5,7 @@ NAME          := containers
 
 NAMESPACE      ?= ft
 CXXSTD         := c++98
-CONTAINERS_PATH= ../include/ft
+CONTAINERS_PATH= include/ft
 
 ifeq ($(NAMESPACE),std)
   NAMESPACE_FLAG := -DSTD_MODE=1
@@ -19,7 +19,7 @@ MAKEFLAGS += --no-print-directory
 
 CXX         := c++
 CXXSTDFLAG  := -std=$(CXXSTD)
-SANITIZE_FLAG ?= -fsanitize=address
+SANITIZE_FLAG ?= -fsanitize=address -g3  # TODO
 CXXFLAGS    := $(CXXSTDFLAG) -MMD -MP -Wall -Wextra -Werror $(NAMESPACE_FLAG) $(SANITIZE_FLAG)
 
 CPPFLAGS    := -I./$(CONTAINERS_PATH) -I./test/include

@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
+#include <limits>
+#include <algorithm>
 #include "equal.h"
 #include "iterator_traits.h"
 #include "lexicographical_compare.h"
@@ -23,12 +25,12 @@ namespace ft
         typedef Allocator allocator_type;
         typedef std::size_t size_type;
         typedef std::ptrdiff_t difference_type;
-        typedef T& reference;
-        typedef const T& const_reference;
+        typedef T &reference;
+        typedef const T &const_reference;
         typedef typename Allocator::pointer pointer;
         // TODO: 더 알아보기 LegacyRandomAccessIterator, LegacyContiguousIterator
-        typedef T* iterator;
-        typedef const T* const_iterator;
+        typedef T *iterator;
+        typedef const T *const_iterator;
         typedef ft::reverse_iterator<iterator> reverse_iterator;
         typedef const ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -41,15 +43,15 @@ namespace ft
 
         }
 
-        explicit vector(size_type count, const T& value = T(),
-                         const Allocator& alloc = Allocator())
-                         : _alloc(alloc),
-                           _start(nullptr),
-                           _finish(nullptr),
-                           _end_of_storage(nullptr) {
+        explicit vector(size_type count, const T &value = T(),
+                        const Allocator &alloc = Allocator())
+                : _alloc(alloc),
+                  _start(nullptr),
+                  _finish(nullptr),
+                  _end_of_storage(nullptr) {
             // https://en.cppreference.com/w/cpp/memory/allocator.html
 
-            if(count > 0) {
+            if (count > 0) {
                 _start = _alloc.allocate(count);  // allocates uninitialized storage
                 _finish = _start;
                 _end_of_storage = _start + count;
@@ -66,23 +68,18 @@ namespace ft
 
         template<class InputIt>
         vector(InputIt first, InputIt last,
-                const Allocator& alloc = Allocator(),
-               typename ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type* = 0)
-                : _alloc(alloc)
-                {
-            // TODO: 구현 해야해
-            // Case 1: Dont know distance between first and last (InputIterator)
-            // Case 2: Knows the distance between first and last (ForwardIterator)
-                    _construct_from_range(first, last,
-                                          typename ft::iterator_traits<InputIt>::iterator_category());
+               const Allocator &alloc = Allocator(),
+               typename ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type * = 0)
+                : _alloc(alloc) {
+            _construct_from_range(first, last,
+                                  typename ft::iterator_traits<InputIt>::iterator_category());
         }
 
-        vector(const vector& other)
+        vector(const vector &other)
                 : _alloc(other._alloc),
                   _start(nullptr),
                   _finish(nullptr),
-                  _end_of_storage(nullptr)
-        {
+                  _end_of_storage(nullptr) {
             size_type count = other.size();
 
             if (count > 0) {
@@ -115,7 +112,7 @@ namespace ft
         }
 
         // exception safety 보장 by Copy and Swap idiom
-        vector& operator=( const vector& other ) {
+        vector &operator=(const vector &other) {
             // 최적화 b/c deep copy costs too much
             if (this == &other) {
                 return *this;
@@ -126,7 +123,7 @@ namespace ft
             return *this;
         }
 
-        void assign( size_type count, const T& value ) {
+        void assign(size_type count, const T &value) {
             vector temp(count, value, this->_alloc);
             this->swap(temp);
         }
@@ -144,7 +141,7 @@ namespace ft
         // exception을 던저야 해
         // 예외가 어디서 발생했는지 식별
         reference at(size_type pos) {
-            if(pos >= this->size()) {
+            if (pos >= this->size()) {
                 throw std::out_of_range("vector");
             }
             return *(_start + pos);
@@ -152,7 +149,7 @@ namespace ft
 
         const_reference at(size_type pos) const {
             // TODO: const member func size()가 호출된다 한다. 어케 알아서 해주는 거지: const안에서만 해준다 -> 그리고 이 클래스 외부 클래스에서는 const 안해도 알빠노
-            if(pos >= this->size()) {
+            if (pos >= this->size()) {
                 throw std::out_of_range("vector::at");
             }
             return *(_start + pos);
@@ -199,8 +196,13 @@ namespace ft
         // 2. 두 포인터(반복자) 간의 거리를 표현하는 'difference_type'의 최대값.
         size_type max_size() const {
             size_type alloc_limit = _alloc.max_size();
-            size_type diff_limit = std::numeric_limits<difference_type>::max();
-            return std::min(alloc_limit, diff_limit);
+
+            size_type diff_limit = (size_type)std::numeric_limits<difference_type>::max();
+
+            if (alloc_limit > diff_limit) {
+                return diff_limit;
+            }
+            return alloc_limit;
         }
 
         size_type capacity() const {
@@ -223,16 +225,16 @@ namespace ft
             return _finish;
         }
 
-        void push_back( const T& value ) {
+        void push_back(const T &value) {
             // 공간 있을때
             if (_finish != _end_of_storage) {
                 _alloc.construct(_finish, value);
                 ++_finish;
             }
-                // 빈 공간이 없을 때
             else {
                 const size_type old_capacity = this->capacity();
                 const size_type new_capacity = (old_capacity == 0) ? 1 : old_capacity * 2;
+
                 pointer new_start = _alloc.allocate(new_capacity);
                 pointer new_finish = new_start;
                 pointer old_it = _start;
@@ -244,7 +246,7 @@ namespace ft
                 _alloc.construct(new_finish, value);
                 ++new_finish; // size 1 증가
 
-                // 정리
+                // 정리 (기존 메모리 해제)
                 for (pointer p = _start; p != _finish; ++p) {
                     _alloc.destroy(p);
                 }
@@ -267,29 +269,33 @@ namespace ft
             _alloc.destroy(_finish);
         }
 
-        iterator insert( const_iterator pos, const T& value ) {
+        iterator insert(const_iterator pos, const T &value) {
             size_type insert_index = pos - this->begin();
             this->insert(pos, 1, value);
 
             return _start + insert_index;
         }
 
-        iterator insert( const_iterator pos,
-                         size_type count, const T& value ) {
+        iterator insert(const_iterator pos,
+                        size_type count, const T &value) {
             if (count == 0) {
-                return (iterator)pos;
+                return (iterator) pos;
             }
 
             // insert index 저장
             size_type insert_index = pos - this->begin();
-            size_type free_space = _end_of_storage - _finish;
+            size_type required_size = this->size() + count;
+
 
             // Relocation needed
-            if (count > free_space) {
+            if (required_size > this->capacity()) {
 
-                size_type old_size = this->size();
+                size_type old_capacity = this->capacity();
 
-                size_type new_capacity = old_size + std::max(old_size, count);
+                size_type new_capacity = (old_capacity == 0) ? required_size : old_capacity * 2;
+                if (new_capacity < required_size) {
+                    new_capacity = required_size;
+                }
 
                 pointer new_start = _alloc.allocate(new_capacity);
                 pointer new_finish = new_start;
@@ -301,18 +307,16 @@ namespace ft
 
                 new_finish = std::uninitialized_copy(_start + insert_index, _finish, new_finish);
 
-
                 if (_start != NULL) {
                     for (pointer p = _start; p < _finish; ++p)
                         _alloc.destroy(p);
-                    _alloc.deallocate(_start, this->capacity());
+                    _alloc.deallocate(_start, old_capacity);
                 }
 
                 _start = new_start;
                 _finish = new_finish;
                 _end_of_storage = new_start + new_capacity;
             }
-            // No Relocation
             else {
                 iterator insert_pos = _start + insert_index;
                 size_type elements_after = _finish - insert_pos;
@@ -330,8 +334,7 @@ namespace ft
                         _finish += elements_after;
                         std::fill_n(insert_pos, elements_after, value);
                     }
-                }
-                else {
+                } else {
                     std::uninitialized_fill_n(_finish, count, value);
                     _finish += count;
                 }
@@ -339,14 +342,20 @@ namespace ft
             return _start + insert_index;
         }
 
-        template< class InputIt >
-        iterator insert( const_iterator pos, InputIt first, InputIt last,
-                         typename ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type* = 0) {
-            return _insert_dispatch(pos, first, last,
-                                    typename ft::iterator_traits<InputIt>::iterator_category());
+        template<class InputIt>
+        iterator insert(const_iterator pos, InputIt first, InputIt last,
+                        typename ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type * = 0) {
+            size_type insert_index = pos - this->begin();
+
+            for (; first != last; ++first) {
+                iterator current_pos = _start + insert_index;
+                this->insert(current_pos, *first); // 단일 삽입 호출
+                ++insert_index;
+            }
+            return _start + (pos - this->begin()); // 원본 삽입 위치 반환
         }
 
-        iterator erase( iterator pos ) {
+        iterator erase(iterator pos) {
             if (pos != _finish) {
                 std::copy(pos + 1, _finish, pos);
                 --_finish;
@@ -355,7 +364,7 @@ namespace ft
             return pos;
         }
 
-        iterator erase( iterator first, iterator last ) {
+        iterator erase(iterator first, iterator last) {
             if (first == last) {
                 return first;
             }
@@ -387,7 +396,7 @@ namespace ft
             this->resize(count, value_type());
         }
 
-        void resize(size_type count, const value_type& value) {
+        void resize(size_type count, const value_type &value) {
             size_type old_size = this->size();
 
             // size가 주는 경우
@@ -399,7 +408,7 @@ namespace ft
 
                 _finish = new_finish;
             }
-            // size가 늘어나는 경우
+                // size가 늘어나는 경우
             else if (count > old_size) {
                 size_type elements_to_add = count - old_size;
                 // Capacity가 충분한 경우
@@ -410,10 +419,14 @@ namespace ft
                     }
                     _finish = current;
                 }
-                // Reallocation needed
+                    // Reallocation needed
                 else {
                     size_type old_capacity = this->capacity();
-                    size_type new_capacity = count;
+
+                    size_type new_capacity = old_capacity * 2;
+                    if (new_capacity < count) {
+                        new_capacity = count;
+                    }
 
                     pointer new_start = _alloc.allocate(new_capacity);
                     pointer new_finish = new_start; // 새 메모리의 끝 포인터
@@ -442,7 +455,7 @@ namespace ft
             }
         }
 
-        void reserve( size_type new_cap) {
+        void reserve(size_type new_cap) {
             if (new_cap > this->max_size()) {
                 throw std::length_error("vector::reserve");
             }
@@ -493,7 +506,7 @@ namespace ft
         pointer _finish;
         pointer _end_of_storage;
 
-        void swap(vector& other) {
+        void swap(vector &other) {
             // TODO: 한창 직접 구현하기 싫을 나이
             std::swap(_alloc, other._alloc);
             std::swap(_start, other._start);
@@ -534,76 +547,6 @@ namespace ft
                 _finish = nullptr;
                 _end_of_storage = nullptr;
             }
-        }
-        template< class InputIt >
-        iterator _insert_dispatch( const_iterator pos, InputIt first, InputIt last,
-                                   std::input_iterator_tag )
-        {
-            size_type insert_index = pos - this->begin();
-
-            for (; first != last; ++first) {
-                iterator current_pos = _start + insert_index;
-                this->insert(current_pos, *first); // 단일 삽입 호출
-                ++insert_index;
-            }
-            return _start + (pos - this->begin()); // 원본 삽입 위치 반환
-        }
-
-        template< class ForwardIt >
-        iterator _insert_dispatch( const_iterator pos, ForwardIt first, ForwardIt last,
-                                   std::forward_iterator_tag ) {
-            size_type count = std::distance(first, last);
-            if (count == 0) {
-                return (iterator) pos;
-            }
-
-            size_type insert_index = pos - this->begin();
-            size_type free_space = _end_of_storage - _finish;
-
-            if (count > free_space) {
-                size_type old_size = this->size();
-                size_type new_capacity = old_size + std::max(old_size, count);
-
-                pointer new_start = _alloc.allocate(new_capacity);
-                pointer new_finish = new_start;
-                try {
-                    new_finish = std::uninitialized_copy(_start, _start + insert_index, new_start);
-                    new_finish = std::uninitialized_copy(first, last, new_finish);
-                    new_finish = std::uninitialized_copy(_start + insert_index, _finish, new_finish);
-                } catch (...) {
-                    for (pointer p = new_start; p < new_finish; ++p) _alloc.destroy(p);
-                    _alloc.deallocate(new_start, new_capacity);
-                    throw;
-                }
-                if (_start != NULL) {
-                    for (pointer p = _start; p < _finish; ++p) _alloc.destroy(p);
-                    _alloc.deallocate(_start, this->capacity());
-                }
-                _start = new_start;
-                _finish = new_finish;
-                _end_of_storage = new_start + new_capacity;
-            } else {
-                iterator insert_pos = _start + insert_index;
-                size_type elements_after = _finish - insert_pos;
-
-                if (elements_after >= count) {
-                    std::uninitialized_copy(_finish - count, _finish, _finish);
-                    _finish += count;
-                    std::copy_backward(insert_pos, _finish - (count * 2), _finish - count);
-                    std::copy(first, last, insert_pos);
-                } else {
-                    ForwardIt mid = first;
-                    std::advance(mid, elements_after);
-
-                    std::uninitialized_copy(mid, last, _finish);
-                    _finish += (count - elements_after);
-                    std::uninitialized_copy(insert_pos, _finish, _finish);
-                    _finish += elements_after;
-                    std::copy(first, mid, insert_pos);
-                }
-            }
-
-            return _start + insert_index;
         }
     };
 
