@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     'bin/containers_std_core_vector_part_2'
+relocations:     []
+...
