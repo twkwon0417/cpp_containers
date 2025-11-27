@@ -1,0 +1,79 @@
+cmake_minimum_required(VERSION 3.31)
+project(cpp_containers)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(include)
+include_directories(include/ft)
+include_directories(test/include)
+
+add_executable(cpp_containers
+        concept/template_specialization.cpp
+        include/ft/bool_type.h
+        include/ft/enable_if.h
+        include/ft/equal.h
+        include/ft/is_floating_point.h
+        include/ft/is_integral.h
+        include/ft/iterator_traits.h
+        include/ft/lexicographical_compare.h
+        include/ft/map.h
+        include/ft/memory.h
+        include/ft/pair.h
+        include/ft/remove_cv.h
+        include/ft/reverse_iterator.h
+        include/ft/stack.h
+        include/ft/vector.h
+        test/include/test_config.h
+        test/include/test_core.h
+        test/include/test_namespace.h
+        test/include/test_print.h
+        test/include/type_name_string.h
+        test/map/test_map_bounds.cpp
+        test/map/test_map_clear_swap.cpp
+        test/map/test_map_compare.cpp
+        test/map/test_map_count.cpp
+        test/map/test_map_erase_balance.cpp
+        test/map/test_map_find_bracket.cpp
+        test/map/test_map_insert_balance.cpp
+        test/map/test_map_insert_plain.cpp
+        test/map/test_map_iterators_basic.cpp
+        test/map/test_map_parts.cpp
+        test/map/test_map_rbt_node.cpp
+        test/stack/test_stack_comparisons.cpp
+        test/stack/test_stack_comparisons_strict.cpp
+        test/stack/test_stack_constructors_empty_size.cpp
+        test/stack/test_stack_exception_safety.cpp
+        test/stack/test_stack_parts.cpp
+        test/stack/test_stack_performance_smoke.cpp
+        test/stack/test_stack_push_top_pop.cpp
+        test/stack/test_stack_types_strings.cpp
+        test/stack/test_stack_underlying_container.cpp
+        test/utils/test_utils_enable_if.cpp
+        test/utils/test_utils_equal.cpp
+        test/utils/test_utils_is_integral.cpp
+        test/utils/test_utils_iterator_traits.cpp
+        test/utils/test_utils_lexicographical_compare.cpp
+        test/utils/test_utils_pair.cpp
+        test/utils/test_utils_parts.cpp
+        test/utils/test_utils_reverse_iterator.cpp
+        test/vector/test_vector_assignment.cpp
+        test/vector/test_vector_at_exception.cpp
+        test/vector/test_vector_capacity.cpp
+        test/vector/test_vector_clear.cpp
+        test/vector/test_vector_comparisons.cpp
+        test/vector/test_vector_comparisons_strict.cpp
+        test/vector/test_vector_constructors.cpp
+        test/vector/test_vector_element_access.cpp
+        test/vector/test_vector_element_access_strict.cpp
+        test/vector/test_vector_exception_safety.cpp
+        test/vector/test_vector_insert_erase.cpp
+        test/vector/test_vector_iterators.cpp
+        test/vector/test_vector_iterators_strict.cpp
+        test/vector/test_vector_lifetime_leakcheck.cpp
+        test/vector/test_vector_parts.cpp
+        test/vector/test_vector_push_pop.cpp
+        test/vector/test_vector_reallocation_stats.cpp
+        test/vector/test_vector_resize_reserve.cpp
+        test/main_advanced_test.cpp
+        test/main_core_test.cpp
+        test/main_stress_test.cpp)
