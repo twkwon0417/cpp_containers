@@ -81,10 +81,10 @@ namespace ft
             Node* node = &temp_node;
         }
 
-        bool check_reconstruct(Node new_node) {
-            Node uncle_node = new_node.parent.parent.right;
+        bool check_reconstruct(Node* new_node) {
+            Node* uncle_node = new_node->parent->parent->right;
 
-            if(new_node.parent.red && !uncle_node.red) {
+            if(new_node->parent->red && !uncle_node->red) {
                 return true;
             }
             return false;
@@ -103,36 +103,86 @@ namespace ft
         // reconstruct의 경우 부모 노드를 검정색으로 바꿔서 문제 없음
         // Uncle node가 가장 큼으로 오른쪽 아래 -> 오른쪽 아래로 가게 됨 따라서 자식 노드를 빨강으로 바꿔도 아무 문제가 생기지 않음
         // => 연쇄적으로 재구성(?)들이 발생하지 않아. + 재구성이 일어나는 상황은 RBT의 모든 리프 노드에서 Black Depth는 같다. 에 의해 생기지 않아.
+        // rotate로 subtree가 이동해도 문제가 생기지 않아 -> 왜나면 uncle이 무조건 black인 경우에만 발생하니까
 		void reconstruct(Node* new_node) {
-			Node* parent_node = new_node->parent;
-			Node* grand_parent_node = parent_node->parent;
-            Node* grand_grand_parent_node = grand_parent_node->parent;
 
-			Node* ls[3] = {new_node, grand_parent_node, parent_node};
-            std::sort(ls, ls + 3, [](Node* a, Node* b) {
-                return a->value.first < b->value.first;
-            });
+		}
 
-            Node* new_parent_node = ls[0];
-            Node* new_grand_parent_node = ls[1];
-            Node* new_uncle_node = ls[2];
+        //   (x)                       (y)
+        //   / \     Left Rotate(x)    / \
+        //  α  (y)   ------------->  (x)  γ
+        //     / \                   / \
+        //    β   γ  <------------- α   β
+        //           Right Rotate(y)
 
-            new_parent_node->parent = new_grand_parent_node;
+        // nullptr로 만들어줘야 할 애들은 없어 보임
+        void _rotate_left(Node* x) {
+            Node* a = x->left;
+            Node* y = x->right;
+            Node* c = y->right;
+            // 아래 코드는 nullptr일수도 있어
+            Node* b = y->left;
 
-            new_grand_parent_node->parent = grand_grand_parent_node;
-            new_grand_parent_node->left = new_parent_node;
-            new_grand_parent_node->right = new_uncle_node;
-
-            new_uncle_node->parent = new_grand_parent_node;
-
-            if (grand_grand_parent_node != nullptr) {
-                if (grand_grand_parent_node->left == grand_parent_node) {
-                    grand_grand_parent_node->left = new_grand_parent_node;
-                } else {
-                    grand_grand_parent_node->right = new_grand_parent_node;
+            Node* parent = x->parent;
+            y->parent = parent;
+            if (parent != nullptr) {
+                // x가 parent의 오른이면 오른, 왼이면 왼으로 update해줘야 해
+                if (parent->left == x) {
+                    parent->left = y;
+                }
+                else {
+                    parent->right = y;
                 }
             }
-		}
+            else {
+                this->root = y;
+            }
+
+            x->left = a;
+            x->right = b;
+
+            y->left = x;
+            y->right = c;
+            if (b != nullptr) {
+                b->parent = x;
+            }
+            x->parent = y;
+        }
+
+        void _rotate_right(Node* x) {
+            Node* a = x->right;
+            Node* y = x->left;
+            Node* c = y->left;
+            // 아래 코드는 nullptr일수도 있어
+            Node* b = y->right; // left -> right
+
+            Node* parent = x->parent;
+            y->parent = parent;
+
+            if (parent != nullptr) {
+                // x가 parent의 오른이면 오른, 왼이면 왼으로 update
+                if (parent->left == x) {
+                    parent->left = y;
+                }
+                else {
+                    parent->right = y;
+                }
+            }
+            else {
+                this->root = y;
+            }
+
+            x->right = a;
+            x->left = b;
+
+            y->right = x;
+            y->left = c;
+
+            if (b != nullptr) {
+                b->parent = x;
+            }
+            x->parent = y;
+        }
     };
 
 } // namespace ft
