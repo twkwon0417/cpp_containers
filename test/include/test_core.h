@@ -51,6 +51,7 @@ void test_map_insert_plain();
 void test_map_iterators_basic();
 void test_map_parts();
 void test_map_rbt_node();
+void test_map_rotate();
 
 // ===========================================================
 // Stack

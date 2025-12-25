@@ -39,6 +39,7 @@ add_executable(cpp_containers
         test/map/test_map_iterators_basic.cpp
         test/map/test_map_parts.cpp
         test/map/test_map_rbt_node.cpp
+        test/map/test_map_rotate.cpp
         test/stack/test_stack_comparisons.cpp
         test/stack/test_stack_comparisons_strict.cpp
         test/stack/test_stack_constructors_empty_size.cpp
